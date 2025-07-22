@@ -2,11 +2,25 @@
 UID := $(shell id -u)
 GID := $(shell id -g)
 
-.PHONY: build up down logs ps shell clean restart
+.PHONY: build up down logs ps shell clean restart help
 
 # Export UID/GID for docker-compose
 export UID
 export GID
+
+# Show help information
+help:
+	@echo "Available targets:"
+	@echo "  build     - Build all containers"
+	@echo "  up        - Start all containers in detached mode"
+	@echo "  down      - Stop all containers"
+	@echo "  logs      - Show logs from all containers"
+	@echo "  ps        - Show status of containers"
+	@echo "  shell     - Access shell in container (usage: make shell SERVICE=main)"
+	@echo "  clean     - Clean volumes (use with caution)"
+	@echo "  restart   - Restart services (usage: make restart SERVICE=main or make restart for all)"
+	@echo "  all       - Build and start all containers"
+	@echo "  help      - Show this help message"
 
 # Build all containers
 build:
