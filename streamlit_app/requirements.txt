@@ -1,0 +1,7 @@
+nbformat
+plotly
+oauth2client
+gspread
+igraph
+streamlit
+pandas

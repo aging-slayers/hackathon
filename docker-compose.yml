@@ -1,0 +1,22 @@
+services:
+  streamlit_app:
+    # Remove the user specification since we handle it in Dockerfile
+    # user: ${UID:-1000}:${GID:-1000}  
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      - TZ=Asia/Tbilisi
+      - STREAMLIT_SERVER_ENABLE_XSRF_PROTECTION=false
+      - STREAMLIT_SERVER_ENABLE_CORS=false
+      - STREAMLIT_BROWSER_GATHER_USAGE_STATS=false  # Fix the metrics error
+      - STREAMLIT_GATHER_USAGE_STATS=false
+      - USER_ID=${UID:-1000}
+      - GROUP_ID=${GID:-1000}
+    volumes:
+      - ./streamlit_app:/app/streamlit_app
+      - ./data:/data
+    container_name: aging_slay_streamlit
+    ports:
+      - "8501:8501"
+    restart: unless-stopped

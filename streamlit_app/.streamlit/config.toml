@@ -1,0 +1,17 @@
+[theme]
+# Set light theme as default
+base = "light"
+primaryColor = "#FF6B6B"  # Custom primary color (matches your compounds)
+backgroundColor = "#FFFFFF"
+secondaryBackgroundColor = "#F0F2F6"
+textColor = "#262730"
+
+[browser]
+gatherUsageStats = false
+
+[global]
+disableWatchdogWarning = true
+
+[server]
+enableCORS = false
+enableXsrfProtection = false
