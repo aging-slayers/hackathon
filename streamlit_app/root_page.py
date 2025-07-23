@@ -1,3 +1,5 @@
+from io import BytesIO
+import requests
 import streamlit as st
 import plotly.graph_objects as go
 import plotly.express as px
@@ -15,6 +17,11 @@ st.set_page_config(
     layout="wide",
     initial_sidebar_state="collapsed",
 )
+
+@st.cache_data
+def get_image(url):
+    r = requests.get(url)
+    return BytesIO(r.content)
 
 def plot_igraph_with_plotly(g, layout_algorithm="fr", width=1000, height=800):
     """
@@ -168,6 +175,7 @@ def plot_igraph_with_plotly(g, layout_algorithm="fr", width=1000, height=800):
     
     return fig
 
+
 def main():
     # App title
     st.title(f"💊 {TITLE}")
@@ -204,6 +212,11 @@ def main():
             
             # Add assistant response (placeholder for now)
             response = "I see your message! Graph functionality will be added soon."
+
+            if "labubu" in prompt.lower():
+                with col2:
+                    st.image(get_image("http://nb3.me/public/labubu.png"), caption="You've been laboobed!")
+
             response = process_pipeline(prompt)
             st.session_state.messages.append({"role": "assistant", "content": response})
             
@@ -238,7 +251,7 @@ def main():
         
         if uploaded_file is not None:
             st.success("File uploaded! Graph loading functionality coming soon.")
-    
+
     with col2:
         st.header("🕸️ Network Graph")
         
