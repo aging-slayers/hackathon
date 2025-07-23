@@ -5,7 +5,8 @@ from typing import List, Optional
 from loguru import logger
 
 from app.clients import query_llama
-from app.prompts import DETERMINE_TASK_PROMPT, GENERAL_PROMPT, DENY_PROMPT, TASKS
+from app.prompts import DETERMINE_TASK_PROMPT, GENERAL_PROMPT, DENY_PROMPT, TASKS, GRAPH_NEEDED
+from app.gpraph import run_subgraph_builder
 
 entities_file = "data/entity_name_mapping.json"
 substances_file = "data/drugbank_vocabulary.csv"
@@ -37,6 +38,35 @@ def find_substances(query: str) -> List[str]:
             ret.append(substances[substance])
     return ret
 
+def return_substances_id_from_list(substances_list: List[str]) -> List[str]:
+    """
+        Return the list of substances IDs from the list of substances names.
+    """
+    ret = []
+    for substance in substances_list:
+        if substance in substances:
+            ret.append(substances[substance])
+        else:
+            logger.warning(f"Substance {substance} not found in the vocabulary.")
+    return ret
+
+
+def check_substance_in_vocabulary(substance: str) -> bool:
+    """
+        Check if the substance is in the local vocabulary.
+        Returns True if substance is found, False otherwise.
+    """
+    return substance.lower() in substances.keys() or substance in substances.values()
+
+def find_substances_llm(query: str) -> List[str]:
+    """
+        Use LLM to find substances in the query.
+        This is a fallback method if the substances are not found in the local vocabulary.
+    """
+    prompt = f"Find any substances in the query: {query}\nReturn a list of original words from text separated by ',' without spaces after ','."
+    response = query_llama(prompt)
+    return response.split(",") if response else []
+
 def determine_task(query: str) -> str:
     # For production purposes, BERT should be fine-tuned here
     tasks = "\n".join([f"{k}:{v}" for k, v in TASKS.items()])
@@ -45,10 +75,13 @@ def determine_task(query: str) -> str:
     return res
 
 
-def process_pipeline(query: str, history: List[str]=[], graph: Optional[object]=None):
+def process_pipeline(query: str, history: List[str]=[], graph: Optional[object]=None) -> dict:
     """
         Handle next step of the dialogue
     """
+    
+    response = {'text': '', 'graph': graph, 'history': history}
+    
     discovered_class = determine_task(query)
     logger.info(f"Query: {query} -> {discovered_class}")
     prompt = f"{DENY_PROMPT}\n\nTask:{query}"
@@ -56,9 +89,26 @@ def process_pipeline(query: str, history: List[str]=[], graph: Optional[object]=
         
         if discovered_class == "help":
             prompt = f"{GENERAL_PROMPT}\n\n{TASKS[discovered_class]}\nTasks which you can do:{TASKS}\nQuery:{query}"
+            
+        elif discovered_class in GRAPH_NEEDED:
+            # Prepare the graph if needed
+            substances = find_substances_llm(query)
+            logger.info(f"Found substances in query: {substances}")
+            for substance in substances:
+                if not check_substance_in_vocabulary(substance):
+                    logger.warning(f"Substance {substance} not found in the vocabulary. Trying to find it with LLM...")
+                    substances.remove(substance)
+            
+            
+            if len(substances) == 0:
+                prompt = f"Please provide a query that contains at least one substance from the DrugBank vocabulary."
+            else:
+                logger.info(f"Found substances: {substances}. Building subgraph...")
+                response['graph'] = run_subgraph_builder(substances)
+                logger.info(f"Subgraph built with {len(response['graph'].vs)} vertices and {len(response['graph'].es)} edges.")
         else:
             prompt = f"{GENERAL_PROMPT}\n\n{TASKS[discovered_class]}\nQuery:{query}"
-    response = query_llama(prompt)
+    response['text'] = query_llama(prompt)
     return response
 
 

@@ -221,7 +221,12 @@ def main():
                     st.image(get_image("http://nb3.me/public/labubu.png"), caption="You've been laboobed!")
 
             response = process_pipeline(prompt)
-            st.session_state.messages.append({"role": "assistant", "content": response})
+            st.session_state.messages.append({"role": "assistant", "content": response['text']})
+            
+            if response['graph'] is not None:
+                st.session_state.graph = response['graph']
+            else:
+                st.session_state.graph = None
             
             # Rerun to show new messages
             st.rerun()

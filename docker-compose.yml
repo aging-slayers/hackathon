@@ -16,6 +16,7 @@ services:
     volumes:
       - ./streamlit_app:/app/streamlit_app
       - ./data:/app/data
+      - ./access:/app/access
     container_name: aging_slay_streamlit
     ports:
       - "8501:8501"

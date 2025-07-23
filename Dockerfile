@@ -25,6 +25,8 @@ WORKDIR /app
 # Copy application code with proper ownership
 COPY --chown=appuser:appuser streamlit_app .
 COPY --chown=appuser:appuser app/ /app/app
+COPY --chown=appuser:appuser research_scripts /app/research_scripts
+COPY --chown=appuser:appuser project_config.py /app/project_config.py
 
 # Switch to non-root user for running the app
 USER appuser
