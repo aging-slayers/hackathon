@@ -4,14 +4,31 @@ from typing import List, Optional
 from app.clients import query_llama
 from app.prompts import *
 from loguru import logger
+import json
+
+entities_file = "../data/entity_name_mapping.json"
+
+def load_entities():
+    substances = {}
+    with open(entities_file, "r") as f:
+        data = json.load(f)
+        for k, v in data.items():
+            if k.startswith("Compound::"):
+                substances[v.lower()] = k.split("::")[1]
+        return substances
+    
 
 # initialize with cached lists of tokens
-substances = None
+substances = load_entities()
 signal_paths = None
 
+
 def find_substances(query: str) -> List[str]:
-    
-    return []
+    ret = []
+    for substance in substances.keys():
+        if substance in query.lower():
+            ret.append(substances[substance])
+    return ret
 
 def determine_task(query: str) -> str:
     # For production purposes, BERT should be fine-tuned here
@@ -47,3 +64,6 @@ if __name__ == "__main__":
     for task in tasks:
         discovered_class = determine_task(task)
         print(f"Task: {task} -> {discovered_class}")
+
+    res = find_substances(tasks[1])
+    print(f"Sent: {tasks[1]} -> {res} ({substances[res[0]]})")
