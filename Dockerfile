@@ -9,7 +9,7 @@ RUN apt-get update && apt-get install -y \
 RUN pip install --no-cache-dir uv
 
 # Copy requirements and install dependencies AS ROOT
-COPY streamlit_app/requirements.txt .
+COPY requirements.txt .
 RUN uv pip install --system --no-cache-dir -r requirements.txt
 
 # Create a non-root user AFTER installing packages
@@ -29,6 +29,7 @@ USER appuser
 
 # Set environment variables
 ENV PYTHONUNBUFFERED=1
+ENV PYTHONPATH=/app
 ENV STREAMLIT_BROWSER_GATHER_USAGE_STATS=false
 ENV STREAMLIT_GATHER_USAGE_STATS=false
 
