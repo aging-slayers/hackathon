@@ -1,10 +1,36 @@
 
+#== 1 substance found
+# Find combinations with rapamycin
+# Describe effects of rapamycin
+# Was rapamycin tested on ...
+
+#== 2+ substances
+# Find good combinations among the substances listed
+# Are those compatible for the purpose of aging?
+
+#== 0 substances
+# Find me combinations of medical substances that can contribute to longevity task
+# -> take random 10
+
+# Find substances that influence a specific signal pathway (protein/gene)
+
+# Find substances that were tested on mice/Labubus
+
+# Suggest me substances that make my life longer
+# -> take 10 top elements -> random
+
+#== Trash
+# Order me a pizza
+
 TASKS = {
     "compare": "Compare two or more substances in the query",
-    "combinations": "Find suitable combinations of ",
+    "combinations": "Find suitable combinations of the substances mentioned in the query",
     "tested": "Was the substance mentioned in the query tested on a specific species",
     "effects": "Describe the effects of the substance mentioned in the query",
     "suggest": "Suggest the drugs and active substances that are suitable for the request in the area of longevity",
 }
 
 DETERMINE_TASK_PROMPT = "Check if the query provided belongs to one of the following task, or return WRONGTASK if the query belongs to none of them. Return only the label of the task."
+
+GENERAL_PROMPT = "Here is the task and the query. Respond to the task as precise as possible. Return the response in a few sentences."
+DENY_PROMPT = "Return a polite denial to perform the task requested because the system is designed to help primarily with longevity research tasks"

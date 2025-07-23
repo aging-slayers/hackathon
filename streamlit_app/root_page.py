@@ -4,6 +4,8 @@ import plotly.express as px
 import numpy as np
 import igraph as ig
 
+from app.pipeline import process_pipeline
+
 TITLE = "Age SLAYers Longevity Drug Search"
 
 # Configure page
@@ -202,6 +204,7 @@ def main():
             
             # Add assistant response (placeholder for now)
             response = "I see your message! Graph functionality will be added soon."
+            response = process_pipeline(prompt)
             st.session_state.messages.append({"role": "assistant", "content": response})
             
             # Rerun to show new messages
