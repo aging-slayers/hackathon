@@ -1,25 +1,31 @@
 #!/usr/bin/env python3
 
+import csv
 from typing import List, Optional
+from loguru import logger
+
 from app.clients import query_llama
 from app.prompts import *
-from loguru import logger
-import json
 
-entities_file = "../data/entity_name_mapping.json"
+entities_file = "data/entity_name_mapping.json"
+substances_file = "data/drugbank_vocabulary.csv"
 
-def load_entities():
+def load_substances():
     substances = {}
-    with open(entities_file, "r") as f:
-        data = json.load(f)
-        for k, v in data.items():
-            if k.startswith("Compound::"):
-                substances[v.lower()] = k.split("::")[1]
-        return substances
+    with open(substances_file, "r") as f:
+        reader = csv.reader(f)
+        for row in reader:
+            # DB00001,BTD00024 | BIOD00024,Lepirudin,138068-37-8,Y43GF64R34,"[Leu1, Thr2]-63-desulfohirudin | Desulfatohirudin | Hirudin variant-1 | Lepirudin | Lepirudin recombinant | R-hirudin",
+            substances[row[2].lower()] = row[0]
+            if len(row) > 4:
+                for synonym in row[5].split("|"):
+                    substances[synonym.strip().lower()] = row[0]
+    logger.info(f"Loaded {len(substances)} substances")
+    return substances
     
 
 # initialize with cached lists of tokens
-substances = load_entities()
+substances = load_substances()
 signal_paths = None
 
 
