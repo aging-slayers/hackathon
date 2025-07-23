@@ -29,7 +29,7 @@ def process_pipeline(query: str, history: List[str]=[], graph: Optional[object]=
     logger.info(f"Query: {query} -> {discovered_class}")
     prompt = f"{DENY_PROMPT}\n\nTask:{query}"
     if discovered_class in TASKS.keys():
-        prompt = f"{GENERAL_PROMPT}\n\n{tasks[discovered_class]}\nQuery:{query}"
+        prompt = f"{GENERAL_PROMPT}\n\n{TASKS[discovered_class]}\nQuery:{query}"
     response = query_llama(prompt)
     return response
 
