@@ -22,12 +22,12 @@ def create_entity_name_mapping():
         mesh_ui = record.findtext("DescriptorUI")
         name = record.find("DescriptorName/String").text
         if mesh_ui and name:
-            mapping_disease[f"Disease::MESH:{mesh_ui}"] = f"Disease::{name}"
+            mapping_disease[f"Disease::MESH:{mesh_ui}"] = f"Disease::MESH:{name}"
 
     # DOID
     doid = obonet.read_obo(project_config.PATH_DOID)
     doid_to_name = {
-        f"Disease::{node_id}": data.get("name", "")
+        f"Disease::{node_id}": f"Disease::{data.get("name", "")}"
         for node_id, data in doid.nodes(data=True)
         if node_id.startswith("DOID:")
     }
