@@ -17,13 +17,14 @@ RUN groupadd -r appuser && useradd -r -g appuser appuser
 
 # Create app directory and set ownership
 RUN mkdir -p /app && chown -R appuser:appuser /app
+RUN mkdir -p /app/app && chown -R appuser:appuser /app/app
 
 # Set working directory
 WORKDIR /app
 
 # Copy application code with proper ownership
 COPY --chown=appuser:appuser streamlit_app .
-COPY --chown=appuser:appuser app .
+COPY --chown=appuser:appuser app/ /app/app
 
 # Switch to non-root user for running the app
 USER appuser
