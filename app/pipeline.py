@@ -16,7 +16,6 @@ def load_substances():
     with open(substances_file, "r") as f:
         reader = csv.reader(f)
         for row in reader:
-            # DB00001,BTD00024 | BIOD00024,Lepirudin,138068-37-8,Y43GF64R34,"[Leu1, Thr2]-63-desulfohirudin | Desulfatohirudin | Hirudin variant-1 | Lepirudin | Lepirudin recombinant | R-hirudin",
             substances[row[2].lower()] = row[0]
             if len(row) > 4:
                 for synonym in row[5].split("|"):
@@ -28,6 +27,7 @@ def load_substances():
 
 # initialize with cached lists of tokens
 substances = load_substances()
+substances_dict = {v: k for k, v in substances.items()}
 signal_paths = None
 
 
@@ -128,8 +128,11 @@ if __name__ == "__main__":
         "Order me a pizza"
     ]
     for task in tasks:
-        discovered_class = determine_task(task)
+        discovered_class = "" #determine_task(task)
         print(f"Task: {task} -> {discovered_class}")
 
     res = find_substances(tasks[1])
-    print(f"Sent: {tasks[1]} -> {res} ({substances[res[0]]})")
+    print(f"Sent: {tasks[1]} -> {res} ({[substances_dict[r] for r in res]})")
+
+    res = find_substances("Hello")
+    print(f"Sent: Hello -> {res} ({[substances_dict[r] for r in res]})")
