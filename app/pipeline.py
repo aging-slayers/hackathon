@@ -5,7 +5,7 @@ from typing import List, Optional
 from loguru import logger
 
 from app.clients import query_llama
-from app.prompts import *
+from app.prompts import DETERMINE_TASK_PROMPT, GENERAL_PROMPT, DENY_PROMPT, TASKS
 
 entities_file = "data/entity_name_mapping.json"
 substances_file = "data/drugbank_vocabulary.csv"
@@ -23,6 +23,7 @@ def load_substances():
     logger.info(f"Loaded {len(substances)} substances")
     return substances
     
+
 
 # initialize with cached lists of tokens
 substances = load_substances()
@@ -52,7 +53,11 @@ def process_pipeline(query: str, history: List[str]=[], graph: Optional[object]=
     logger.info(f"Query: {query} -> {discovered_class}")
     prompt = f"{DENY_PROMPT}\n\nTask:{query}"
     if discovered_class in TASKS.keys():
-        prompt = f"{GENERAL_PROMPT}\n\n{TASKS[discovered_class]}\nQuery:{query}"
+        
+        if discovered_class == "help":
+            prompt = f"{GENERAL_PROMPT}\n\n{TASKS[discovered_class]}\nTasks which you can do:{TASKS}\nQuery:{query}"
+        else:
+            prompt = f"{GENERAL_PROMPT}\n\n{TASKS[discovered_class]}\nQuery:{query}"
     response = query_llama(prompt)
     return response
 

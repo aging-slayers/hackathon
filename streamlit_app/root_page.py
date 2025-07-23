@@ -9,6 +9,9 @@ import igraph as ig
 from app.pipeline import process_pipeline
 
 TITLE = "Age SLAYers Longevity Drug Search"
+INSTRUCTIONS = """Welcome to the Age SLAYers Longevity Drug Search app! This application allows you to explore and visualize networks of compounds, diseases, genes, and side effects related to longevity research.
+"""
+
 
 # Configure page
 st.set_page_config(
@@ -183,7 +186,7 @@ def main():
     # Initialize session state for chat history
     if "messages" not in st.session_state:
         st.session_state.messages = [
-            {"role": "assistant", "content": "Hello! I'm here to help you explore your network graph. What would you like to know?"}
+            {"role": "assistant", "content": INSTRUCTIONS}
         ]
     
     # Initialize session state for graph
@@ -206,7 +209,7 @@ def main():
                     st.write(message["content"])
         
         # Chat input
-        if prompt := st.chat_input("Ask me about the network..."):
+        if prompt := st.chat_input("Ask me about the network or compounds..."):
             # Add user message to chat history
             st.session_state.messages.append({"role": "user", "content": prompt})
             

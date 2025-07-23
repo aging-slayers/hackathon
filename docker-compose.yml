@@ -15,7 +15,7 @@ services:
       - GROUP_ID=${GID:-1000}
     volumes:
       - ./streamlit_app:/app/streamlit_app
-      - ./data:/data
+      - ./data:/app/data
     container_name: aging_slay_streamlit
     ports:
       - "8501:8501"
