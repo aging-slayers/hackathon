@@ -27,7 +27,7 @@ TASKS = {
     "combinations": "Find suitable combinations of the substances mentioned in the query",
     "single": "Find a single substance that is mentioned in the query",
     "tested": "Was the substance mentioned in the query tested on a specific species",
-    "effects": "Describe the effects of the substance mentioned in the query",
+    # "effects": "Describe the effects of the substance mentioned in the query",
     "suggest": "Suggest the drugs and active substances that are suitable for the request in the area of longevity",
     "help": "User asks to explain what the system can do and how to use it. Explain following the tasks below:",
 }

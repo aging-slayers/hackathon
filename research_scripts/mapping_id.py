@@ -9,6 +9,7 @@ def create_entity_name_mapping():
     # compound
     df_compound = pd.read_csv(project_config.PATH_DRUGBANK_VOCABULARY)
     df_compound["DrugBank ID"] = "Compound::" + df_compound["DrugBank ID"]
+    df_compound["Common name"] = "Compound::" + df_compound["Common name"]
     mapping_compound = df_compound.set_index("DrugBank ID")["Common name"].to_dict()
 
     # disease
@@ -21,7 +22,7 @@ def create_entity_name_mapping():
         mesh_ui = record.findtext("DescriptorUI")
         name = record.find("DescriptorName/String").text
         if mesh_ui and name:
-            mapping_disease[f"Disease::MESH:{mesh_ui}"] = name
+            mapping_disease[f"Disease::MESH:{mesh_ui}"] = f"Disease::{name}"
 
     # DOID
     doid = obonet.read_obo(project_config.PATH_DOID)
@@ -35,10 +36,13 @@ def create_entity_name_mapping():
     df_gene = pd.read_csv(project_config.PATH_HGNC, sep="\t")
     df_gene["HGNC ID"] = "Gene::" + df_gene["HGNC ID"].str.split(":").str[1]
     mapping_gene = df_gene.set_index("HGNC ID")["Approved symbol"].to_dict()
-
+    mapping_gene = {
+        k: f"Gene::{v}" for k, v in mapping_gene.items() if pd.notna(v)
+    }
     # Mapping Side Effect
     df_side_effect = pd.read_csv(project_config.PATH_SIDER, sep="\t", header=None)
     df_side_effect[1] = "Side Effect::" + df_side_effect[1]
+    df_side_effect[3] = "Side Effect::" + df_side_effect[3]
     mapping_side_effect = df_side_effect.set_index(1)[3].to_dict()
 
     entity_name_mapping = (

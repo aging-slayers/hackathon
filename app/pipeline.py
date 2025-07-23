@@ -63,9 +63,14 @@ def find_substances_llm(query: str) -> List[str]:
         Use LLM to find substances in the query.
         This is a fallback method if the substances are not found in the local vocabulary.
     """
-    prompt = f"Find any substances in the query: {query}\nReturn a list of original words from text separated by ',' without spaces after ','."
+    prompt = f"Find any substances in the query: {query}\nReturn a list of original words from text separated by ',' without spaces after ','. Do not separate one substance with ',' if it takes more than one word."
     response = query_llama(prompt)
-    return response.split(",") if response else []
+    ret_substances = list()
+    substances_found = response.split(",")
+    
+    for substance in substances_found:
+        ret_substances.append(substance.lower().strip())
+    return ret_substances if response else []
 
 def determine_task(query: str) -> str:
     # For production purposes, BERT should be fine-tuned here
