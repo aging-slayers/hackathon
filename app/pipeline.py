@@ -5,11 +5,19 @@ from typing import List, Optional
 from loguru import logger
 
 from app.clients import query_llama
-from app.prompts import DETERMINE_TASK_PROMPT, GENERAL_PROMPT, DENY_PROMPT, TASKS, GRAPH_NEEDED
+from app.prompts import DETERMINE_TASK_PROMPT, GENERAL_PROMPT, \
+        DENY_PROMPT, TASKS, GRAPH_NEEDED, FIND_SUBSTANCES_PROMPT
 from app.gpraph import run_subgraph_builder
 
 entities_file = "data/entity_name_mapping.json"
 substances_file = "data/drugbank/drugbank_vocabulary.csv"
+
+# Parameters for short queries with higher expected determination
+llama_params_det = {
+        "max_tokens": 80,
+        "temperature": 0.45
+    }
+
 
 def load_substances():
     substances = {}
@@ -32,6 +40,7 @@ signal_paths = None
 
 
 def find_substances(query: str) -> List[str]:
+    """Deprecated"""
     ret = []
     for substance in substances.keys():
         if substance in query.lower():
@@ -63,8 +72,7 @@ def find_substances_llm(query: str) -> List[str]:
         Use LLM to find substances in the query.
         This is a fallback method if the substances are not found in the local vocabulary.
     """
-    prompt = f"Find any substances in the query: {query}\nReturn a list of original words from text separated by ',' without spaces after ','. Do not separate one substance with ',' if it takes more than one word."
-    response = query_llama(prompt)
+    response = query_llama(f"{FIND_SUBSTANCES_PROMPT}\nQuery: {query}", params=llama_params_det)
     ret_substances = list()
     substances_found = response.split(",")
     
@@ -76,7 +84,7 @@ def determine_task(query: str) -> str:
     # For production purposes, BERT should be fine-tuned here
     tasks = "\n".join([f"{k}:{v}" for k, v in TASKS.items()])
     prompt = f"{DETERMINE_TASK_PROMPT}\n\n{tasks}\nQuery:{query}"
-    res = query_llama(prompt)
+    res = query_llama(prompt, params=llama_params_det)
     return res
 
 

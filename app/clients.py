@@ -19,13 +19,13 @@ client = OpenAI(
     api_key = LLAMA3_KEY
 )
 
-def query_llama(query: str) -> str:
+def query_llama(query: str, params=llama_params) -> str:
     response = client.chat.completions.create(
         model=LLAMA3_MODEL,
         messages=[
             {"role": "user", "content": query}
         ],
-        **llama_params
+        **params
     )
 
     res = response.choices[0].message.content

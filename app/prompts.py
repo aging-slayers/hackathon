@@ -42,3 +42,6 @@ DETERMINE_TASK_PROMPT = "Check if the query provided belongs to one of the follo
 
 GENERAL_PROMPT = "Here is the task and the query. Respond to the task as precise as possible. Return the response in a few sentences."
 DENY_PROMPT = "Return a polite denial to perform the task requested because the system is designed to help primarily with longevity research tasks"
+
+FIND_SUBSTANCES_PROMPT = """Find any substances in the query below.
+Return a list of original words from text separated by ',' without spaces after ','. Do not separate one substance with ',' if it takes more than one word."""
