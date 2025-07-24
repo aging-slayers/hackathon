@@ -86,7 +86,7 @@ def process_pipeline(query: str, history: List[str]=[], graph: Optional[object]=
     """
     
     response = {'text': '', 'graph': graph, 'history': history}
-    
+    logger.debug(f"Query received: {query}")
     discovered_class = determine_task(query)
     logger.info(f"Query: {query} -> {discovered_class}")
     prompt = f"{DENY_PROMPT}\n\nTask:{query}"
@@ -114,6 +114,7 @@ def process_pipeline(query: str, history: List[str]=[], graph: Optional[object]=
         else:
             prompt = f"{GENERAL_PROMPT}\n\n{TASKS[discovered_class]}\nQuery:{query}"
     response['text'] = query_llama(prompt)
+    logger.info(f"Sending response: {response['text'][:120]}...")
     return response
 
 
