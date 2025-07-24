@@ -1,9 +1,169 @@
-<html>
+<!DOCTYPE html>
+<html lang="en" class="no-js">
 <head>
-  <title>SLAY team -- Longevity hackathon</title>
+    <meta charset="utf-8" />
+
+    <title>Aging SLAYers Hackathon Team</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Open+Sans:400,700" type="text/css" />
+    <link rel="stylesheet" href="http://nb3.me/themes/default/style.css" type="text/css" />
+    <link rel="stylesheet" href="http://nb3.me/themes/default/fontello.css" type="text/css" />
+
+    <script src="http://nb3.me/themes/default/scripts/modernizr-2.6.1.min.js"></script>
+<script src="https://global.localizecdn.com/localize.js"></script>
+<script>(function(a){if(!a.Localize){a.Localize={};for(var e=["translate","untranslate","phrase","initialize","translatePage","setLanguage","getLanguage","detectLanguage","getAvailableLanguages","untranslatePage","bootstrap","prefetch","on","off","hideWidget","showWidget","getSourceLanguage"],t=0;t<e.length;t++)a.Localize[e[t]]=function(){};}})(window);</script>
+
+<script>
+  Localize.initialize({
+    key: '6gbFinGhPdwFc', 
+    rememberLanguage: true,
+    // other options go here, separated by commas
+  });
+</script>
 </head>
 <body>
-<h1>SLAY team</h1>
-This is a sample page for github.io.
+
+    <header id="header">
+        <div class="inner clearfix">
+        </div>
+    </header>
+
+    <section id="content">
+        <div class="inner"><h1>Longevity hackathon</h1>
+<p>This is a project to showcase results obtained for the <a href="https://forimmortality.ai/ru/">Longevity hackathon</a></p>
+<h1>Drug Research Platform</h1>
+<p>A Streamlit-based web application for biomedical drug research and discovery, integrating multiple pharmaceutical and biomedical databases for comprehensive drug analysis and exploration.</p>
+<h2>🚀 Features</h2>
+<ul>
+<li><strong>Multi-Database Integration</strong>: Combines data from DrKG, DrugBank, MeSH, SIDER, DOID, and HGNC</li>
+<li><strong>Interactive Web Interface</strong>: Built with Streamlit for intuitive data exploration</li>
+<li><strong>Containerized Deployment</strong>: Docker-based setup for consistent environments</li>
+<li><strong>Knowledge Graph Analysis</strong>: Leverages drug repurposing knowledge graphs</li>
+<li><strong>Disease Ontology Integration</strong>: Incorporates structured disease classifications</li>
+</ul>
+<h2>📋 Prerequisites</h2>
+<ul>
+<li>Docker and Docker Compose</li>
+<li>Make (optional, for convenience commands)</li>
+<li>Minimum 4GB RAM recommended</li>
+<li>At least 2GB free disk space for data and containers</li>
+</ul>
+<h2>🗂️ Data Structure</h2>
+<p>The application integrates the following biomedical databases:</p>
+<pre><code>data/
+├── doid/                    # Disease Ontology
+│   └── doid.obo            # Disease classifications and relationships
+├── drkg/                    # Drug Repurposing Knowledge Graph
+│   ├── drkg.tsv            # Main knowledge graph data
+│   ├── graph.gml           # Graph structure file
+│   ├── relation_glossary.tsv # Relationship definitions
+│   └── relation_glossary.xlsx
+├── drugbank/                # DrugBank Database
+│   └── drugbank_vocabulary.csv # Drug nomenclature and metadata
+├── hgnc/                    # Human Gene Nomenclature Committee
+│   └── HGNC_complete_set.tsv # Official gene symbols and names
+├── mesh/                    # Medical Subject Headings
+│   └── desc2025.xml        # Medical terminology hierarchy
+├── sider/                   # Side Effect Resource
+│   └── meddra_all_indications.tsv # Drug side effects and indications
+├── drugbank_vocabulary.csv  # Additional drug vocabulary
+└── entity_name_mapping.json # Entity name mappings across databases</code></pre>
+<h3>Database Sources</h3>
+<ul>
+<li><strong>DOID</strong>: <a href="https://disease-ontology.org/">Disease Ontology</a> - Standardized disease classifications</li>
+<li><strong>DrKG</strong>: <a href="https://github.com/gnn4dr/DRKG">Drug Repurposing Knowledge Graph</a> - Comprehensive biomedical knowledge graph</li>
+<li><strong>DrugBank</strong>: <a href="https://go.drugbank.com/">DrugBank Database</a> - Pharmaceutical knowledge base</li>
+<li><strong>HGNC</strong>: <a href="https://www.genenames.org/">HUGO Gene Nomenclature Committee</a> - Official gene symbols</li>
+<li><strong>MeSH</strong>: <a href="https://www.nlm.nih.gov/mesh/">Medical Subject Headings</a> - NLM's controlled vocabulary</li>
+<li><strong>SIDER</strong>: <a href="http://sideeffects.embl.de/">Side Effect Resource</a> - Drug side effects database</li>
+</ul>
+<h3>Google Drive Access files</h3>
+<p>Place the following files in the <code>access/</code> directory to enable Google Drive access:
+<code>access/service_account.json</code>.
+Instructions on creating a Google Drive client and connecting it to the code can be found <a href="https://developers.google.com/workspace/sheets/api/quickstart/python">here</a>.</p>
+<h2>🛠️ Installation &amp; Setup</h2>
+<h3>Option 1: Using Make (Recommended)</h3>
+<pre><code class="language-bash"># Clone the repository
+git clone &lt;repository-url&gt;
+cd &lt;project-directory&gt;
+
+# Build and start all services
+make</code></pre>
+<h3>Option 2: Using Docker Compose Directly</h3>
+<p>Don't forget to place Google Drive client JSON file.</p>
+<pre><code class="language-bash"># Set environment variables
+export UID=$(id -u)
+export GID=$(id -g)
+
+# Build and start
+./run.sh</code></pre>
+<h2>🚀 Usage</h2>
+<h3>Accessing the Application</h3>
+<p>Once the containers are running, access the Streamlit application at:</p>
+<pre><code>http://localhost:8501</code></pre>
+<h3>Available Make Commands</h3>
+<pre><code class="language-bash">make help     # Show all available commands
+make build    # Build all containers
+make up       # Start containers in detached mode
+make down     # Stop all containers
+make logs     # View container logs
+make ps       # Show container status
+make restart  # Restart services
+make clean    # Clean volumes (⚠️ removes data)</code></pre>
+<h3>Development Commands</h3>
+<pre><code class="language-bash"># Access container shell
+make shell SERVICE=streamlit_app
+
+# View logs in real-time
+make logs
+
+# Restart specific service
+make restart SERVICE=streamlit_app</code></pre>
+<h2>🔧 Configuration</h2>
+<h3>Port Configuration</h3>
+<ul>
+<li><strong>Streamlit App</strong>: Port 8501 (configurable in docker-compose.yml)</li>
+</ul>
+<h3>Volume Mounts</h3>
+<ul>
+<li><code>./streamlit_app</code> → <code>/app/streamlit_app</code> (Application code)</li>
+<li><code>./data</code> → <code>/app/data</code> (Database files)</li>
+<li><code>./access</code> → <code>/app/access</code> (Access control files)</li>
+</ul>
+<h2>📁 Project Structure</h2>
+<pre><code>.
+├── docker-compose.yml      # Docker services configuration
+├── Dockerfile             # Container build instructions
+├── Makefile               # Development convenience commands
+├── requirements.txt       # Python dependencies
+├── project_config.py      # Project configuration
+├── streamlit_app/         # Streamlit application code
+│   └── root_page.py       # Main application entry point
+├── app/                   # Core application modules
+├── research_scripts/      # Research and analysis scripts
+├── data/                  # Database files (see structure above)
+└── access/                # Access control and authentication</code></pre>
+<h2>🤝 Contributing</h2>
+<ol>
+<li>Fork the repository</li>
+<li>Create a feature branch: <code>git checkout -b feature-name</code></li>
+<li>Make your changes</li>
+<li>Test with: <code>make build &amp;&amp; make up</code></li>
+<li>Submit a pull request</li>
+</ol>
+<h2>Slides for the presentation</h2>
+<p>Feel free to find them <a href="https://www.figma.com/proto/3vflh9xhpQ9hv4irNHTPyU/SLAY-Longevity-Priority.-%D0%93%D1%80%D0%B0%D1%84%D0%B8%D0%BA%D0%B8?node-id=0-1&amp;p=f&amp;viewport=623%2C906%2C0.16&amp;t=F4tHTfWUBOR6brma-0&amp;scaling=min-zoom&amp;content-scaling=fixed&amp;starting-point-node-id=10%3A2">here</a>.</p>
+<h2>📄 License</h2>
+<p>This project is licensed under the MIT License.</p>
+<h2>📧 Contact</h2>
+<p><strong>Maintainers</strong>: mikhail.solovyanov@gmail.com, darikcr@gmail.com</p>
+        </div>
+    </section>
+
+    <footer id="footer">
+        <div class="inner">
+            <div class="social">            </div>
+        </div>
+    </footer>
+
 </body>
 </html>
