@@ -16,7 +16,7 @@ INSTRUCTIONS = """Welcome to the Age SLAYers Longevity Drug Search app! This app
 # Configure page
 st.set_page_config(
     page_title=TITLE,
-    page_icon="💊",
+    page_icon="",
     layout="wide",
     initial_sidebar_state="collapsed",
 )

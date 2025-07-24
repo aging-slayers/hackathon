@@ -9,7 +9,7 @@ from app.prompts import DETERMINE_TASK_PROMPT, GENERAL_PROMPT, DENY_PROMPT, TASK
 from app.gpraph import run_subgraph_builder
 
 entities_file = "data/entity_name_mapping.json"
-substances_file = "data/drugbank_vocabulary.csv"
+substances_file = "data/drugbank/drugbank_vocabulary.csv"
 
 def load_substances():
     substances = {}
@@ -108,7 +108,7 @@ def process_pipeline(query: str, history: List[str]=[], graph: Optional[object]=
             if len(substances) == 0:
                 prompt = f"Please provide a query that contains at least one substance from the DrugBank vocabulary."
             else:
-                logger.info(f"Found substances: {substances}. Building subgraph...")
+                logger.info(f"Found substances by LLM: {substances}. Try to find in the DrugBank vocabulary and bulding a graph")
                 response['graph'] = run_subgraph_builder(substances)
                 logger.info(f"Subgraph built with {len(response['graph'].vs)} vertices and {len(response['graph'].es)} edges.")
         else:
