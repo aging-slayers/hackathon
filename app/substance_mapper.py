@@ -44,12 +44,12 @@ def map_cell(cell, mapper):
     # 1) handle lists and numpy arrays first
     if isinstance(cell, (list, np.ndarray)):
         mapped = [mapper.get(item, item) for item in cell]
-        logger.debug(f"List/array mapped: {cell} -> {mapped}")
+        logger.trace(f"List/array mapped: {cell} -> {mapped}")
         return mapped
 
     # 2) handle missing scalars
     if cell is None or pd.isna(cell):
-        logger.debug("Missing value encountered, leaving unchanged")
+        logger.trace("Missing value encountered, leaving unchanged")
         return cell
 
     # 3) scalar mapping
@@ -83,6 +83,7 @@ def create_json_for_llm(compounds: list, drug_pivot=drug_pivot_mapped, mapper=en
     try:
         drug_pivot_comp = drug_pivot.loc[compounds].dropna(axis=1, how='all').drop(columns=columns_pathway_function)
         return drug_pivot_comp.to_dict()
-    except:
+    except Exception as e:
+        logger.error(e)
         return {}
 
