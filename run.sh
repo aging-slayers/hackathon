@@ -1,4 +1,4 @@
-#!/bin bash
+#!/bin/bash
 mkdir -p access
 mkdir -d data
 echo Don\'t forget to put Google Sheets credentials to /access folder!
