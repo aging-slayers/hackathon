@@ -241,7 +241,11 @@ def main():
         # Chat input
         if prompt := st.chat_input("Ask me about the network or compounds..."):
             # Add user message to chat history
-            st.session_state.messages.append({"role": "user", "content": prompt})
+            message = {"role": "user", "content": prompt}
+            st.session_state.messages.append(message)
+            with chat_container:
+                with st.chat_message(message["role"]):
+                    st.write(message["content"])
             
             # Add assistant response (placeholder for now)
             response = "I see your message! Graph functionality will be added soon."
