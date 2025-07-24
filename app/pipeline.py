@@ -1,13 +1,15 @@
 #!/usr/bin/env python3
 
 import csv
-from typing import List, Optional
+import json
 from loguru import logger
+from typing import List, Optional
 
 from app.clients import query_llama
 from app.prompts import DETERMINE_TASK_PROMPT, GENERAL_PROMPT, \
         DENY_PROMPT, TASKS, GRAPH_NEEDED, FIND_SUBSTANCES_PROMPT, GRAPH_PROMPT
 from app.gpraph import run_subgraph_builder
+from app.substance_mapper import create_json_for_llm
 
 entities_file = "data/entity_name_mapping.json"
 substances_file = "data/drugbank/drugbank_vocabulary.csv"
@@ -119,9 +121,10 @@ def process_pipeline(query: str, history: List[str]=[], graph: Optional[object]=
                 logger.info(f"Found substances by LLM: {substances}. Try to find in the DrugBank vocabulary and bulding a graph")
                 response['graph'] = run_subgraph_builder(substances)
                 logger.info(f"Subgraph built with {len(response['graph'].vs)} vertices and {len(response['graph'].es)} edges.")
-
-            if response['graph']:
-                prompt = f"{GENERAL_PROMPT}\n\n{TASKS[discovered_class]}\n{GRAPH_PROMPT}\n{response['graph']}\nTask: {query}"
+                supplemental_json = create_json_for_llm(substances)
+                # logger.debug(json.dumps(supplemental_json, indent=4))
+                if supplemental_json and len(supplemental_json) > 2:
+                    prompt = f"{GENERAL_PROMPT}\n\n{TASKS[discovered_class]}\n{GRAPH_PROMPT}\n{supplemental_json}\nTask: {query}"
 
         else:
             prompt = f"{GENERAL_PROMPT}\n\n{TASKS[discovered_class]}\nQuery: {query}"

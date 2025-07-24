@@ -46,4 +46,4 @@ DENY_PROMPT = "Return a polite denial to perform the task requested because the 
 FIND_SUBSTANCES_PROMPT = """Find any substances in the query below.
 Return a list of original words from text separated by ',' without spaces after ','. Do not separate one substance with ',' if it takes more than one word."""
 
-GRAPH_PROMPT = "Additional information below includes a subgraph displaying relations between those substances in iGraph format. Use it to form the response as a ground truth"
+GRAPH_PROMPT = "Additional information below includes a subgraph displaying relations between those substances in JSON format. Use it to form the response as a ground truth. Do not mention the work JSON in the output"
