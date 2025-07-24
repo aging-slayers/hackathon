@@ -119,9 +119,9 @@ def process_pipeline(query: str, history: List[str]=[], graph: Optional[object]=
                 prompt = f"Please provide a query that contains at least one substance from the DrugBank vocabulary."
             else:
                 logger.info(f"Found substances by LLM: {substances}. Try to find in the DrugBank vocabulary and bulding a graph")
-                response['graph'] = run_subgraph_builder(substances)
+                response['graph'], substance_ids = run_subgraph_builder(substances)
                 logger.info(f"Subgraph built with {len(response['graph'].vs)} vertices and {len(response['graph'].es)} edges.")
-                supplemental_json = create_json_for_llm(substances)
+                supplemental_json = create_json_for_llm(substance_ids)
                 # logger.debug(json.dumps(supplemental_json, indent=4))
                 if supplemental_json and len(supplemental_json) > 2:
                     prompt = f"{GENERAL_PROMPT}\n\n{TASKS[discovered_class]}\n{GRAPH_PROMPT}\n{supplemental_json}\nTask: {query}"
