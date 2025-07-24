@@ -113,7 +113,6 @@ def process_pipeline(query: str, history: List[str]=[], graph: Optional[object]=
                     logger.warning(f"Substance {substance} not found in the vocabulary. Trying to find it with LLM...")
                     substances.remove(substance)
             
-            
             if len(substances) == 0:
                 prompt = f"Please provide a query that contains at least one substance from the DrugBank vocabulary."
             else:

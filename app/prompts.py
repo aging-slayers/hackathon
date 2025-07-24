@@ -24,7 +24,7 @@
 
 TASKS = {
     "compare": "Compare two or more substances in the query",
-    "combinations": "Find suitable combinations of the substances mentioned in the query",
+    "combinations": "Find suitable combinations of the substances mentioned in the query. Concentrate around the effects of the combination of the substances rather than effects of the individual substance",
     "single": "Find a single substance that is mentioned in the query",
     "tested": "Was the substance mentioned in the query tested on a specific species",
     # "effects": "Describe the effects of the substance mentioned in the query",
