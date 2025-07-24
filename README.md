@@ -59,6 +59,7 @@ data/
 
 Place the following files in the `access/` directory to enable Google Drive access:
 `access/service_account.json`.
+Instructions on creating a Google Drive client and connecting it to the code can be found [here](https://developers.google.com/workspace/sheets/api/quickstart/python).
 
 ## 🛠️ Installation & Setup
 
@@ -75,14 +76,15 @@ make
 
 ### Option 2: Using Docker Compose Directly
 
+Don't forget to place Google Drive client JSON file.
+
 ```bash
 # Set environment variables
 export UID=$(id -u)
 export GID=$(id -g)
 
 # Build and start
-docker compose build
-docker compose up -d
+./run.sh
 ```
 
 ## 🚀 Usage
