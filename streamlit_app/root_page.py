@@ -9,14 +9,16 @@ import igraph as ig
 from app.pipeline import process_pipeline
 
 TITLE = "Age SLAYers Longevity Drug Search"
-INSTRUCTIONS = """Welcome to the Age SLAYers Longevity Drug Search app! This application allows you to explore and visualize networks of compounds, diseases, genes, and side effects related to longevity research.
+INSTRUCTIONS = """Welcome to the Age SLAYers Longevity Drug Search app!
+This application allows you to explore and visualize networks of compounds, diseases, genes,
+and side effects related to longevity research.
 """
 
 
 # Configure page
 st.set_page_config(
     page_title=TITLE,
-    page_icon="",
+    page_icon="💊",
     layout="wide",
     initial_sidebar_state="collapsed",
 )
@@ -26,7 +28,7 @@ def get_image(url):
     r = requests.get(url)
     return BytesIO(r.content)
 
-def plot_igraph_with_plotly(g, layout_algorithm="fr", width=1000, height=800):
+def plot_igraph_with_plotly(g, layout_algorithm="fr", width=800, height=800):
     """
     Plot an igraph network using Plotly with node type coloring and interactivity
     
@@ -180,28 +182,56 @@ def plot_igraph_with_plotly(g, layout_algorithm="fr", width=1000, height=800):
 
 
 def main():
-    # App title
-    st.title(f"💊 {TITLE}")
+
+    st.markdown("""
+                <style>
+                    .stApp {
+                        background-color: #faf0f9;
+                    }
+                    .title_left {
+                        font-size: 2rem;
+                        font-weight: bold;
+                        margin-left: 0rem;
+                        margin-top: -2rem;
+                    }
+                    .title_right {
+                        font-size: 2rem;
+                        font-weight: bold;
+                        margin-left: 0rem;
+                        margin-top: -2rem;
+                    }
+                    .subtitle {
+                        color: #a455d6;
+                        font-size: 1rem;
+                        margin-left: 0.5rem;
+                    }
+                </style>
+                """, unsafe_allow_html=True)
     
     # Initialize session state for chat history
     if "messages" not in st.session_state:
         st.session_state.messages = [
             {"role": "assistant", "content": INSTRUCTIONS}
         ]
-    
+
     # Initialize session state for graph
     if "graph" not in st.session_state:
         st.session_state.graph = None
     
-    # Create two columns: chat on left, graph on right
-    col1, col2 = st.columns([1, 2])  # Chat takes 1/3, graph takes 2/3
-    
+    col1, col_right = st.columns([1,1.2])
+
     with col1:
-        st.header("💬 Chat")
+        st.markdown("""
+                <div class="main-container">
+                        <div class="title_left">
+                        Longevity drug search<span class="subtitle"> By SLAYers 💅</span>
+                        </div>
+                </div>
+            """, unsafe_allow_html=True)
         
         # Chat container
         chat_container = st.container(height=500)
-        
+
         with chat_container:
             # Display chat messages
             for message in st.session_state.messages:
@@ -217,7 +247,7 @@ def main():
             response = "I see your message! Graph functionality will be added soon."
 
             if "labubu" in prompt.lower():
-                with col2:
+                with col_right:
                     st.image(get_image("http://nb3.me/public/labubu.png"), caption="You've been laboobed!")
 
             response = process_pipeline(prompt)
@@ -230,73 +260,86 @@ def main():
             
             # Rerun to show new messages
             st.rerun()
-        
-        # Graph controls
-        st.divider()
-        st.subheader("🎛️ Graph Controls")
-        
-        # Layout algorithm selector
-        layout_algorithm = st.selectbox(
-            "Layout Algorithm",
-            ["fr", "kk", "drl", "circle", "grid"],
-            index=0,
-            help="Choose how to arrange the nodes"
-        )
-        
-        # Graph dimensions
-        col1a, col1b = st.columns(2)
-        with col1a:
-            graph_width = st.slider("Width", 600, 1200, 800)
-        with col1b:
-            graph_height = st.slider("Height", 400, 800, 600)
-        
-        # Upload graph file (placeholder)
-        uploaded_file = st.file_uploader(
-            "Upload Graph File",
-            type=['graphml', 'gml', 'json'],
-            help="Upload your network graph file"
-        )
-        
-        if uploaded_file is not None:
-            st.success("File uploaded! Graph loading functionality coming soon.")
+            
 
-    with col2:
-        st.header("🕸️ Network Graph")
-        
-        # Graph display area
-        if st.session_state.graph is not None:
-            # Plot the graph
-            fig = plot_igraph_with_plotly(
-                st.session_state.graph, 
-                layout_algorithm=layout_algorithm,
-                width=graph_width,
-                height=graph_height
+    with col_right:
+        st.markdown("""
+            <div class="right-container">
+                <div class="title_right">Drug Network Map</div
+            </div>
+        """, unsafe_allow_html=True)
+
+        top = st.container()
+        bottom = st.container()
+
+        with top:
+            # Graph dimensions
+            col1a, col1b, col1c = st.columns(3)
+            with col1a:
+            # Layout algorithm selector
+                layout_algorithm = st.selectbox(
+                    "Layout Algorithm",
+                    ["fr", "kk", "drl", "circle", "grid"],
+                    index=0,
+                    help="Choose how to arrange the nodes"
             )
-            st.plotly_chart(fig, use_container_width=True)
-        else:
-            # Placeholder when no graph is loaded
-            st.info("📄 No graph loaded yet")
+            with col1b:
+                graph_width = st.slider("Width", 600, 1200, 800)
+            with col1c:
+                graph_height = st.slider("Height", 400, 800, 600)
             
-            # Create a sample graph for demonstration
-            if st.button("Load Sample Graph", type="primary"):
-                # Create a sample graph
-                sample_graph = ig.Graph.Erdos_Renyi(n=20, p=0.15, directed=True)
-                
-                # Add node names and types
-                node_types = ['Gene', 'Compound', 'Disease', 'Side Effect']
-                sample_graph.vs['name'] = [f"{np.random.choice(node_types)}::{i:04d}" for i in range(sample_graph.vcount())]
-                sample_graph.es['relation'] = ['interacts_with'] * sample_graph.ecount()
-                
-                st.session_state.graph = sample_graph
-                st.rerun()
+            # # Upload graph file (placeholder)
+            # uploaded_file = st.file_uploader(
+            #     "Upload Graph File",
+            #     type=['graphml', 'gml', 'json'],
+            #     help="Upload your network graph file"
+            # )
             
-            st.markdown("""
-            **Instructions:**
-            1. Click "Load Sample Graph" to see a demonstration
-            2. Or upload your own graph file (feature coming soon)
-            3. Use the controls on the left to adjust the visualization
-            4. Chat with me about the network structure and properties
-            """)
+            # if uploaded_file is not None:
+            #     st.success("File uploaded! Graph loading functionality coming soon.")
 
+        with bottom:
+            # Graph display area
+            if st.session_state.graph is not None:
+                # Plot the graph
+                fig = plot_igraph_with_plotly(
+                    st.session_state.graph, 
+                    layout_algorithm=layout_algorithm,
+                    width=graph_width,
+                    height=graph_height
+                )
+                fig.update_layout(
+                    height=400, 
+                    width=400     
+                )
+                st.plotly_chart(fig, use_container_width=True)
+
+            # else:
+            #     # Placeholder when no graph is loaded
+            #     st.info("📄 No graph loaded yet")
+                
+            #     # Create a sample graph for demonstration
+            #     if st.button("Load Sample Graph", type="primary"):
+            #         # Create a sample graph
+            #         sample_graph = ig.Graph.Erdos_Renyi(n=20, p=0.15, directed=True)
+                    
+            #         # Add node names and types
+            #         node_types = ['Gene', 'Compound', 'Disease', 'Side Effect']
+            #         sample_graph.vs['name'] = [f"{np.random.choice(node_types)}::{i:04d}" for i in range(sample_graph.vcount())]
+            #         sample_graph.es['relation'] = ['interacts_with'] * sample_graph.ecount()
+                    
+            #         st.session_state.graph = sample_graph
+            #         st.rerun()
+                
+                # st.markdown("""
+                # **Instructions:**
+                # 1. Click "Load Sample Graph" to see a demonstration
+                # 2. Or upload your own graph file (feature coming soon)
+                # 3. Use the controls on the left to adjust the visualization
+                # 4. Chat with me about the network structure and properties
+                # """)
+
+
+        
 if __name__ == "__main__":
     main()
