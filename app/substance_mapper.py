@@ -95,7 +95,6 @@ def create_json_for_llm(compounds: list, drug_pivot=drug_pivot, mapper=ent_mappe
 
 substances_file = "data/drugbank/drugbank_vocabulary.csv"
 
-
 @lru_cache(maxsize=1)
 def load_substances():
     substances = {}
