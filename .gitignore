@@ -8,3 +8,6 @@ __pycache__
 #dev
 .vscode
 .idea/
+
+# google workspace auth
+access/*.json
