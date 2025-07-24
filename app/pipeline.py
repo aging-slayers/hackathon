@@ -6,7 +6,7 @@ from loguru import logger
 
 from app.clients import query_llama
 from app.prompts import DETERMINE_TASK_PROMPT, GENERAL_PROMPT, \
-        DENY_PROMPT, TASKS, GRAPH_NEEDED, FIND_SUBSTANCES_PROMPT
+        DENY_PROMPT, TASKS, GRAPH_NEEDED, FIND_SUBSTANCES_PROMPT, GRAPH_PROMPT
 from app.gpraph import run_subgraph_builder
 
 entities_file = "data/entity_name_mapping.json"
@@ -97,13 +97,14 @@ def process_pipeline(query: str, history: List[str]=[], graph: Optional[object]=
     logger.debug(f"Query received: {query}")
     discovered_class = determine_task(query)
     logger.info(f"Query: {query} -> {discovered_class}")
-    prompt = f"{DENY_PROMPT}\n\nTask:{query}"
+    prompt = f"{DENY_PROMPT}\n\nTask: {query}"
     if discovered_class in TASKS.keys():
         
         if discovered_class == "help":
-            prompt = f"{GENERAL_PROMPT}\n\n{TASKS[discovered_class]}\nTasks which you can do:{TASKS}\nQuery:{query}"
+            prompt = f"{GENERAL_PROMPT}\n\n{TASKS[discovered_class]}\nTasks which you can do:{TASKS}\nQuery: {query}"
             
         elif discovered_class in GRAPH_NEEDED:
+            prompt = f"{GENERAL_PROMPT}\n\n{TASKS[discovered_class]}\nTask: {query}"
             # Prepare the graph if needed
             substances = find_substances_llm(query)
             logger.info(f"Found substances in query: {substances}")
@@ -119,9 +120,17 @@ def process_pipeline(query: str, history: List[str]=[], graph: Optional[object]=
                 logger.info(f"Found substances by LLM: {substances}. Try to find in the DrugBank vocabulary and bulding a graph")
                 response['graph'] = run_subgraph_builder(substances)
                 logger.info(f"Subgraph built with {len(response['graph'].vs)} vertices and {len(response['graph'].es)} edges.")
+
+            if response['graph']:
+                prompt = f"{GENERAL_PROMPT}\n\n{TASKS[discovered_class]}\n{GRAPH_PROMPT}\n{response['graph']}\nTask: {query}"
+
         else:
-            prompt = f"{GENERAL_PROMPT}\n\n{TASKS[discovered_class]}\nQuery:{query}"
+            prompt = f"{GENERAL_PROMPT}\n\n{TASKS[discovered_class]}\nQuery: {query}"
+
+    # logger.debug(response['graph'])
     response['text'] = query_llama(prompt)
+    logger.debug(f"Query to LLM: {prompt}")
+    logger.debug(f"LLM response: {response['text']}")
     logger.info(f"Sending response: {response['text'][:120]}...")
     return response
 
