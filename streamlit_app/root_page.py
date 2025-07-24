@@ -1,10 +1,11 @@
+import asyncio
 from io import BytesIO
-import requests
-import streamlit as st
+from loguru import logger
+import nest_asyncio
 import plotly.graph_objects as go
 import plotly.express as px
-import numpy as np
-import igraph as ig
+import requests
+import streamlit as st
 
 from app.pipeline import process_pipeline
 
@@ -14,6 +15,8 @@ This application allows you to explore and visualize networks of compounds, dise
 and side effects related to longevity research.
 """
 
+# Monkey patch Streamlit's internal event loop
+nest_asyncio.apply()
 
 # Configure page
 st.set_page_config(
@@ -180,9 +183,13 @@ def plot_igraph_with_plotly(g, layout_algorithm="fr", width=800, height=800):
     
     return fig
 
+async def predict(query: str):
+    logger.debug(f"Request: {query}")
+    response = process_pipeline(query)
+    logger.debug(f"Got response!")
+    return response
 
 def main():
-
     st.markdown("""
                 <style>
                     .stApp {
@@ -254,7 +261,15 @@ def main():
                 with col_right:
                     st.image(get_image("http://nb3.me/public/labubu.png"), caption="You've been laboobed!")
 
-            response = process_pipeline(prompt)
+            loop = asyncio.get_event_loop()
+            with st.spinner("Predicting..."):
+                try:
+                    response = loop.run_until_complete(
+                        predict(prompt)
+                    )
+                    logger.debug(response)
+                except Exception as e:
+                    st.error(f"An error occurred: {e}")
             st.session_state.messages.append({"role": "assistant", "content": response['text']})
             
             if response['graph'] is not None:

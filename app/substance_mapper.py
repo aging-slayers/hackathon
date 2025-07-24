@@ -9,10 +9,10 @@ from functools import lru_cache
 
 
 columns_pathway_function = [
-    'gene_pathways_activated_by_drug',
-    'gene_pathways_inhibited_by_drug',
-    'molecular_function_activated_by_drug',
-    'molecular_function_inhibited_by_drug'
+    'gene_pathway_plus',
+    'gene_pathway_minus',
+    'gene_function_plus',
+    'gene_function_minus'
 ]
 
 def load_json_file(filepath):
@@ -46,12 +46,12 @@ def map_cell(cell, mapper):
     # 1) handle lists and numpy arrays first
     if isinstance(cell, (list, np.ndarray)):
         mapped = [mapper.get(item, item) for item in cell]
-        # logger.debug(f"List/array mapped: {cell} -> {mapped}")
+        logger.trace(f"List/array mapped: {cell} -> {mapped}")
         return mapped
 
     # 2) handle missing scalars
     if cell is None or pd.isna(cell):
-        # logger.debug("Missing value encountered, leaving unchanged")
+        logger.trace("Missing value encountered, leaving unchanged")
         return cell
 
     # 3) scalar mapping
@@ -79,14 +79,17 @@ def map_dataframe(df, entity_mapper):
 start = time.time()
 drug_pivot = pd.read_json("data/drug_pivot_full.json", orient="table").set_index("compound")
 ent_mapper_new = process_mapping(load_json_file('data/entity_name_mapping.json'))
-drug_pivot_mapped = map_dataframe(drug_pivot, ent_mapper_new)
+# drug_pivot_mapped = map_dataframe(drug_pivot, ent_mapper_new)
 logger.info(f"Loaded substance mapping graph in {time.time() - start}s...")
 
-def create_json_for_llm(compounds: list, drug_pivot=drug_pivot_mapped, mapper=ent_mapper_new) -> dict:
+def create_json_for_llm(compounds: list, drug_pivot=drug_pivot, mapper=ent_mapper_new) -> dict:
+    logger.info(f"Finding {compounds}...")
     try:
         drug_pivot_comp = drug_pivot.loc[compounds].dropna(axis=1, how='all').drop(columns=columns_pathway_function)
-        return drug_pivot_comp.to_dict()
-    except:
+        drug_pivot_comp_mapped = map_dataframe(drug_pivot_comp, mapper)
+        return drug_pivot_comp_mapped.to_dict()
+    except Exception as e:
+        logger.error(e)
         return {}
 
 

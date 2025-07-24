@@ -1,11 +1,12 @@
 anthropic==0.52.0
 gspread
 igraph
+loguru==0.7.2
 nbformat
+nest-asyncio==1.6.0
 oauth2client
+obonet
 openai==1.82.0
 pandas
 plotly
 streamlit==1.47.0
-loguru==0.7.2
-obonet

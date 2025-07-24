@@ -21,14 +21,6 @@ llama_params_det = {
     }
 
 
-
-
-# initialize with cached lists of tokens
-
-signal_paths = None
-
-
-
 def check_substance_in_vocabulary(substance: str) -> bool:
     """
         Check if the substance is in the local vocabulary.
@@ -135,9 +127,9 @@ def process_pipeline(query: str, history: List[str]=[], graph: Optional[object]=
 
                 response['substances'] = substances_comp
                 logger.info(f"Found substances by LLM: {substances_local}. Try to find in the DrugBank vocabulary and bulding a graph for {substances_comp}")
-                response['graph'] = run_subgraph_builder(substances_comp)
+                response['graph'], substance_ids = run_subgraph_builder(substances)
                 logger.info(f"Subgraph built with {len(response['graph'].vs)} vertices and {len(response['graph'].es)} edges.")
-                supplemental_json = create_json_for_llm(substances_comp)
+                supplemental_json = create_json_for_llm(substance_ids)
                 # logger.debug(json.dumps(supplemental_json, indent=4))
                 if supplemental_json and len(supplemental_json) > 2:
                     prompt = f"{GENERAL_PROMPT}\n\n{TASKS[discovered_class]}\n{GRAPH_PROMPT}\n{supplemental_json}\nTask: {query}"

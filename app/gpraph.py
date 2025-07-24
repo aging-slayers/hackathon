@@ -5,12 +5,9 @@ import time
 
 from research_scripts.find_id_compound import find_id_compound
 from research_scripts.get_actual_relations import get_actual_relations
-from research_scripts.loading_graph import loading_graph, build_igraph_from_triplets
+from research_scripts.loading_graph import build_igraph_from_triplets
 from research_scripts.filtering_graph import filter_graph
 from research_scripts.mapping_id import create_entity_name_mapping
-from research_scripts.visualisation import plot_subgraph
-from research_scripts.save_graph import save_igraph_as_json
-from research_scripts.coloring_edges import coloring_edges
 
 from loguru import logger
 
@@ -45,4 +42,4 @@ def run_subgraph_builder(drugs, map_readable_names=True):
     if map_readable_names:
         filt_graph.vs['name'] = [get_id_to_name_mapping().get(name, name) for name in filt_graph.vs['name']]
     
-    return filt_graph
+    return filt_graph, list(drug_ids)
