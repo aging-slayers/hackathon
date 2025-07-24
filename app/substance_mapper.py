@@ -1,9 +1,11 @@
 import json
+import csv
 from loguru import logger
 import time
 
 import pandas as pd
 import numpy as np
+from functools import lru_cache
 
 
 columns_pathway_function = [
@@ -44,18 +46,19 @@ def map_cell(cell, mapper):
     # 1) handle lists and numpy arrays first
     if isinstance(cell, (list, np.ndarray)):
         mapped = [mapper.get(item, item) for item in cell]
-        logger.debug(f"List/array mapped: {cell} -> {mapped}")
+        # logger.debug(f"List/array mapped: {cell} -> {mapped}")
         return mapped
 
     # 2) handle missing scalars
     if cell is None or pd.isna(cell):
-        logger.debug("Missing value encountered, leaving unchanged")
+        # logger.debug("Missing value encountered, leaving unchanged")
         return cell
 
     # 3) scalar mapping
     new_val = mapper.get(cell, cell)
     if new_val != cell:
-        logger.debug(f"Scalar mapped: {cell} -> {new_val}")
+        # logger.debug(f"Scalar mapped: {cell} -> {new_val}")
+        pass
     return new_val
 
 
@@ -86,3 +89,78 @@ def create_json_for_llm(compounds: list, drug_pivot=drug_pivot_mapped, mapper=en
     except:
         return {}
 
+
+substances_file = "data/drugbank/drugbank_vocabulary.csv"
+
+
+@lru_cache(maxsize=1)
+def load_substances():
+    substances = {}
+    with open(substances_file, "r") as f:
+        reader = csv.reader(f)
+        for row in reader:
+            substances[row[2].lower()] = row[0]
+            if len(row) > 4:
+                for synonym in row[5].split("|"):
+                    substances[synonym.strip().lower()] = row[0]
+    logger.info(f"Loaded {len(substances)} substances")
+    return substances
+
+
+
+
+substances = load_substances()
+
+substances_dict = {v: k for k, v in substances.items()}
+
+
+def find_substances(query: str) -> list[str]:
+    """Deprecated"""
+    ret = []
+    for substance in substances.keys():
+        if substance in query.lower():
+            ret.append(substances[substance])
+    return ret
+
+
+def return_substances_id_from_list(substances_list: list[str], lower: bool = False) -> list[str]:
+    """
+        Return the list of substances IDs from the list of substances names.
+    """
+    ret = []
+    for substance in substances_list:
+        if lower:
+            substance = substance.lower().strip()
+        if substance in substances:
+            ret.append(substances[substance])
+        else:
+            logger.warning(f"Substance {substance} not found in the vocabulary.")
+    return ret
+
+"""{'common name': 'DrugBank ID',
+ 'synonyms': 'DrugBank ID',
+ 'lepirudin': 'DB00001',
+ '[leu1, thr2]-63-desulfohirudin': 'DB00001',
+ 'desulfatohirudin': 'DB00001',
+ 'hirudin variant-1': 'DB00001',
+ 'lepirudin recombinant': 'DB00001',"""
+
+def id_to_name(id:str) -> str:
+    """
+        Convert substance ID to its name.
+    """
+    if id in substances_dict:
+        return substances_dict[id]
+    else:
+        logger.warning(f"Substance ID {id} not found in the vocabulary.")
+        return id
+
+def name_to_id(name: str) -> str:
+    """
+        Convert substance name to its ID. For Scoring purposes ONLY
+    """
+    if name.lower() in substances:
+        return f"Compound::{substances[name.lower()]}"
+    else:
+        logger.warning(f"Substance name {name} not found in the vocabulary.")
+        return name

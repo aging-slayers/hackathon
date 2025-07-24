@@ -1,15 +1,15 @@
 #!/usr/bin/env python3
 
-import csv
-import json
 from loguru import logger
 from typing import List, Optional
+import pandas as pd
 
 from app.clients import query_llama
 from app.prompts import DETERMINE_TASK_PROMPT, GENERAL_PROMPT, \
-        DENY_PROMPT, TASKS, GRAPH_NEEDED, FIND_SUBSTANCES_PROMPT, GRAPH_PROMPT
+        DENY_PROMPT, TASKS, GRAPH_NEEDED, FIND_SUBSTANCES_PROMPT, GRAPH_PROMPT, SCORING_NEEDED
 from app.gpraph import run_subgraph_builder
-from app.substance_mapper import create_json_for_llm
+from app.substance_mapper import create_json_for_llm, load_substances, substances, substances_dict, id_to_name, name_to_id, find_substances
+from app.scoring import score_against_all, score_pair, get_n_best, find_best_pair
 
 entities_file = "data/entity_name_mapping.json"
 substances_file = "data/drugbank/drugbank_vocabulary.csv"
@@ -21,45 +21,12 @@ llama_params_det = {
     }
 
 
-def load_substances():
-    substances = {}
-    with open(substances_file, "r") as f:
-        reader = csv.reader(f)
-        for row in reader:
-            substances[row[2].lower()] = row[0]
-            if len(row) > 4:
-                for synonym in row[5].split("|"):
-                    substances[synonym.strip().lower()] = row[0]
-    logger.info(f"Loaded {len(substances)} substances")
-    return substances
-    
 
 
 # initialize with cached lists of tokens
-substances = load_substances()
-substances_dict = {v: k for k, v in substances.items()}
+
 signal_paths = None
 
-
-def find_substances(query: str) -> List[str]:
-    """Deprecated"""
-    ret = []
-    for substance in substances.keys():
-        if substance in query.lower():
-            ret.append(substances[substance])
-    return ret
-
-def return_substances_id_from_list(substances_list: List[str]) -> List[str]:
-    """
-        Return the list of substances IDs from the list of substances names.
-    """
-    ret = []
-    for substance in substances_list:
-        if substance in substances:
-            ret.append(substances[substance])
-        else:
-            logger.warning(f"Substance {substance} not found in the vocabulary.")
-    return ret
 
 
 def check_substance_in_vocabulary(substance: str) -> bool:
@@ -95,7 +62,7 @@ def process_pipeline(query: str, history: List[str]=[], graph: Optional[object]=
         Handle next step of the dialogue
     """
     
-    response = {'text': '', 'graph': graph, 'history': history}
+    response = {'text': '', 'graph': graph, 'history': history, 'substances': [], "scoring_info": None}
     logger.debug(f"Query received: {query}")
     discovered_class = determine_task(query)
     logger.info(f"Query: {query} -> {discovered_class}")
@@ -108,29 +75,81 @@ def process_pipeline(query: str, history: List[str]=[], graph: Optional[object]=
         elif discovered_class in GRAPH_NEEDED:
             prompt = f"{GENERAL_PROMPT}\n\n{TASKS[discovered_class]}\nTask: {query}"
             # Prepare the graph if needed
-            substances = find_substances_llm(query)
-            logger.info(f"Found substances in query: {substances}")
-            for substance in substances:
+            substances_local = find_substances_llm(query)
+            logger.info(f"Found substances in query: {substances_local}")
+            for substance in substances_local:
                 if not check_substance_in_vocabulary(substance):
                     logger.warning(f"Substance {substance} not found in the vocabulary. Trying to find it with LLM...")
-                    substances.remove(substance)
+                    substances_local.remove(substance)
             
-            if len(substances) == 0:
-                prompt = f"Please provide a query that contains at least one substance from the DrugBank vocabulary."
+
+            
+            
+            if len(substances_local) == 0:
+                prompt = f"Please ask user to provide a query that contains at least one substance from the DrugBank vocabulary."
             else:
-                logger.info(f"Found substances by LLM: {substances}. Try to find in the DrugBank vocabulary and bulding a graph")
-                response['graph'] = run_subgraph_builder(substances)
+                # Normal case graph is needed and substances are found
+                
+                if discovered_class in SCORING_NEEDED:
+                    # Calculate scoring
+                    if discovered_class == "combinations":
+                        # Find the best combinations of substances and append the best pair to substance for graph
+                        
+                        substance_id = name_to_id(substances_local[0])  # Take the first substance for scoring
+                        logger.info(f"Scoring substance {substances_local[0]}: {substance_id} against all other substances")
+                        
+                        scores = score_against_all(substance_id)
+                        top: pd.Series = get_n_best(scores, n=5)
+                        top_id = top.index[0].split("::")[1]
+                        top_subst = id_to_name(top_id)
+                        substances_comp = [substances_local[0], top_subst]
+                        logger.info(f"Best scoring substance for {substances_local[0]} is {top_subst} with score {top.iloc[0]}")
+                        
+                        response['scoring_info'] = "Scoring information:\n" + \
+                            f"Substance {substances_local[0]} scored against all other substances:\n{top.to_string()}\n" +\
+                            f"Best scoring substance is {top_subst} with score {top.iloc[0]}.\n" + \
+                            f"Substances for final graph: {substances_comp}"
+                        
+                    elif discovered_class == "compare":
+                        if len(substances_local) > 2:
+                            # Now we need to find best scoring for compare.
+                            # Find best pair of substances
+                            logger.info(f"Finding best pair of substances from {substances_local}")
+                            best_score, name1, name2, id1, id2 = find_best_pair(
+                                substances_local,
+                                name_to_id_func=name_to_id,
+                                top_n=1
+                            )
+                            substances_comp = [name1, name2]
+                        
+                            response['scoring_info'] = f"Best pair found: {name1} ({id1}) and {name2} ({id2}) with score {best_score}"
+                        if len(substances_comp) == 2:
+                            logger.info(f"COMPARE==2: Substances for graph: {substances_comp}")
+                            substances_local = substances_comp
+                    else:
+                        substances_comp = substances_local[:2]
+                llama_params_ans = {
+                    "max_tokens": 3000,
+                    "temperature": 0.5
+                }
+
+                response['substances'] = substances_comp
+                logger.info(f"Found substances by LLM: {substances_local}. Try to find in the DrugBank vocabulary and bulding a graph for {substances_comp}")
+                response['graph'] = run_subgraph_builder(substances_comp)
                 logger.info(f"Subgraph built with {len(response['graph'].vs)} vertices and {len(response['graph'].es)} edges.")
-                supplemental_json = create_json_for_llm(substances)
+                supplemental_json = create_json_for_llm(substances_comp)
                 # logger.debug(json.dumps(supplemental_json, indent=4))
                 if supplemental_json and len(supplemental_json) > 2:
                     prompt = f"{GENERAL_PROMPT}\n\n{TASKS[discovered_class]}\n{GRAPH_PROMPT}\n{supplemental_json}\nTask: {query}"
+
+                if response['scoring_info'] is not None:
+                    prompt += f"\nScoring info:\n{response['scoring_info']}"
 
         else:
             prompt = f"{GENERAL_PROMPT}\n\n{TASKS[discovered_class]}\nQuery: {query}"
 
     # logger.debug(response['graph'])
-    response['text'] = query_llama(prompt)
+    response['text'] = query_llama(prompt, params=llama_params_ans)
     logger.debug(f"Query to LLM: {prompt}")
     logger.debug(f"LLM response: {response['text']}")
     logger.info(f"Sending response: {response['text'][:120]}...")

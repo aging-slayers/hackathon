@@ -23,7 +23,7 @@
 # Order me a pizza
 
 TASKS = {
-    "compare": "Compare two or more substances in the query",
+    "compare": "Compare two or more substances in the query. Describe combination of substances mentioned in the query",
     "combinations": "Find suitable combinations of the substances mentioned in the query. Concentrate around the effects of the combination of the substances rather than effects of the individual substance",
     "single": "Find a single substance that is mentioned in the query",
     "tested": "Was the substance mentioned in the query tested on a specific species",
@@ -36,6 +36,11 @@ GRAPH_NEEDED = [
     "compare",
     "combinations",
     "single"
+]
+
+SCORING_NEEDED = [
+    "compare",
+    "combinations",
 ]
 
 DETERMINE_TASK_PROMPT = "Check if the query provided belongs to one of the following task, or return WRONGTASK if the query belongs to none of them. Return only the label of the task."

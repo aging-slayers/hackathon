@@ -31,7 +31,7 @@ def get_id_to_name_mapping():
     
     return entity_name_mapping
 
-def run_subgraph_builder(drugs):
+def run_subgraph_builder(drugs, map_readable_names=True):
     global triplets
     drug_ids = find_id_compound(drugs)
     
@@ -42,6 +42,7 @@ def run_subgraph_builder(drugs):
     graph = build_igraph_from_triplets(actual_triplets)
     filt_graph = filter_graph(graph, drug_ids)
 
-    filt_graph.vs['name'] = [get_id_to_name_mapping().get(name, name) for name in filt_graph.vs['name']]
+    if map_readable_names:
+        filt_graph.vs['name'] = [get_id_to_name_mapping().get(name, name) for name in filt_graph.vs['name']]
     
     return filt_graph
