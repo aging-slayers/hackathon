@@ -2,9 +2,10 @@ import anthropic
 from openai import OpenAI
 import os
 
-LLAMA3_API = "http://80.209.242.40:8000/v1"
-LLAMA3_KEY = "dummy-key2"
-LLAMA3_MODEL = "llama-3.3-70b-instruct"
+LLAMA3_API = "https://openrouter.ai/api/v1" # "http://80.209.242.40:8000/v1"
+LLAMA3_KEY = os.environ.get("OPENROUTER_API_KEY") # "dummy-key2"
+# LLAMA3_MODEL = "google/gemini-2.5-pro-exp-03-25"
+LLAMA3_MODEL = "nvidia/llama-3.1-nemotron-ultra-253b-v1" # "llama-3.3-70b-instruct"
 
 llama_params = {
         "max_tokens": 1024,
@@ -27,6 +28,8 @@ def query_llama(query: str, params=llama_params) -> str:
         ],
         **params
     )
+
+    print(response)
 
     res = response.choices[0].message.content
     return res
