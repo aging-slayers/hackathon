@@ -124,10 +124,6 @@ def process_pipeline(query: str, history: List[str]=[], graph: Optional[object]=
                             substances_local = substances_comp
                     else:
                         substances_comp = substances_local[:2]
-                llama_params_ans = {
-                    "max_tokens": 3000,
-                    "temperature": 0.5
-                }
 
                 response['substances'] = substances_comp
                 logger.info(f"Found substances by LLM: {substances_local}. Try to find in the DrugBank vocabulary and bulding a graph for {substances_comp}")
