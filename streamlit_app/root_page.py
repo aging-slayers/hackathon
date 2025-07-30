@@ -255,7 +255,7 @@ def main():
                     st.write(message["content"])
             
             # Add assistant response (placeholder for now)
-            response = "I see your message! Graph functionality will be added soon."
+            response = { "text": "I see your message! Graph functionality will be added soon.", "graph": None }
 
             if "labubu" in prompt.lower():
                 with col_right:
@@ -269,6 +269,7 @@ def main():
                     )
                     logger.debug(response)
                 except Exception as e:
+                    response["text"] = str(e)
                     st.error(f"An error occurred: {e}")
             st.session_state.messages.append({"role": "assistant", "content": response['text']})
             

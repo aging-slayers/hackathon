@@ -19,6 +19,10 @@ llama_params_det = {
         "max_tokens": 80,
         "temperature": 0.45
     }
+llama_params_ans = {
+    "max_tokens": 3000,
+    "temperature": 0.5
+}
 
 
 def load_substances():
