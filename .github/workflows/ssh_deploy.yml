@@ -76,7 +76,7 @@ jobs:
         uses: appleboy/ssh-action@master # An action made to control Linux servers
         with: # We set all our secrets here for the action, these won't be shown in the action logs
           host: ${{ env.SSH_HOST }}
-          username: ${{ env.SSH_USERNAME }}
+          username: ${{ env.SSH_USER }}
           key: ${{ env.SSH_KEY }}
           # password: ${{ secrets.PASSWORD }}
           port: ${{ env.SSH_PORT }}
