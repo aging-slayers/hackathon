@@ -83,4 +83,8 @@ jobs:
           script: |
             cd ~/hackathon # we move into our app's folder
             git pull # we pull any changes from git
-            ./run.sh
+            # ./run.sh
+            docker rm -f aging_slay_streamlit && docker image prune -af
+            docker compose up -d
+            docker exec --user root -it aging_slay_streamlit chown -R appuser access
+            echo "Deployed"
