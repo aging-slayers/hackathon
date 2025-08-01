@@ -1,0 +1,86 @@
+# This workflow will build and publish a Docker container which is then deployed through SSH Deploy.
+#
+# The build job in this workflow currently assumes that there is a Dockerfile that generates the relevant application image.
+#
+# 1. Decide where you are going to host your image.
+#    This template uses the GitHub Registry for simplicity but if required you can update the relevant DOCKER_REGISTRY variables below.
+
+
+name: 'Build and Deploy to green'
+
+on:
+  push:
+    branches:
+      - '"master"'
+
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false # tells github to not run further steps if this one fails
+    permissions:
+      packages: write
+      contents: read
+    env:
+      DOCKER_REGISTRY: ghcr.io                                # TODO: Update to your docker registry uri
+      DOCKER_REGISTRY_USERNAME: ${{ github.actor }}           # TODO: Update to your docker registry username
+      DOCKER_REGISTRY_PASSWORD: ${{ secrets.GITHUB_TOKEN }}   # TODO: Update to your docker registry password
+    outputs:
+      image_tag: ${{ steps.meta.outputs.version }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@f95db51fddba0c2d1ec667646a06c2ce06100226 # v3.0.0
+
+      - name: Log in to the Container registry
+        uses: docker/login-action@65b78e6e13532edd9afa3aa52ac7964289d1a9c1
+        with:
+          registry: ${{ env.DOCKER_REGISTRY }}
+          username: ${{ env.DOCKER_REGISTRY_USERNAME }}
+          password: ${{ env.DOCKER_REGISTRY_PASSWORD }}
+
+      - name: Extract metadata (tags, labels) for Docker
+        id: meta
+        uses: docker/metadata-action@9ec57ed1fcdbf14dcef7dfbe97b2010124a938b7
+        with:
+          images: ${{ env.DOCKER_REGISTRY }}/${{ github.repository }}
+          tags: type=semver,pattern={{version}},value=v1.0.0-{{sha}}
+
+      - name: Build and push Docker image
+        id: push
+        uses: docker/build-push-action@f2a1d5e99d037542a71f64918e516c093c6f3fc4
+        with:
+          context: .
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+  deploy:
+    name: Deploy
+    permissions:
+      id-token: write
+    runs-on: ubuntu-latest
+    needs: [ build ]
+    if: 
+      github.ref == 'refs/heads/master' # we tell Github to only execute this step if we're on our master branch (so we don't put unfinished branches in production)
+    env:
+      SSH_HOST: ${{ secrets.SSH_HOST }}
+      SSH_JUMPHOST: ${{ secrets.SSH_PROXY_HOST }}
+      SSH_KEY:  ${{ secrets.SSH_KEY }}
+      SSH_PORT: ${{ secrets.SSH_PORT }}
+      SSH_USER: ${{ secrets.SSH_USER }}
+
+    steps:
+      - name: Deploying to Digitalocean droplet
+        uses: appleboy/ssh-action@master # An action made to control Linux servers
+        with: # We set all our secrets here for the action, these won't be shown in the action logs
+          host: ${{ env.SSH_HOST }}
+          username: ${{ env.SSH_USERNAME }}
+          key: ${{ env.SSH_KEY }}
+          # password: ${{ secrets.PASSWORD }}
+          port: ${{ env.SSH_PORT }}
+          script: |
+            cd ~/hackathon # we move into our app's folder
+            git pull # we pull any changes from git
+            ./run.sh
